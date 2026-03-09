@@ -47,8 +47,8 @@ export namespace SessionCompaction {
     return count >= usable
   }
 
-  export const PRUNE_MINIMUM = 20_000
-  export const PRUNE_PROTECT = 40_000
+  export const PRUNE_MINIMUM = 5_000
+  export const PRUNE_PROTECT = 10_000
 
   const PRUNE_PROTECTED_TOOLS = ["skill"]
 
@@ -91,6 +91,8 @@ export namespace SessionCompaction {
       for (const part of toPrune) {
         if (part.state.status === "completed") {
           part.state.time.compacted = Date.now()
+          part.state.output = ""
+          part.state.attachments = []
           await Session.updatePart(part)
         }
       }
