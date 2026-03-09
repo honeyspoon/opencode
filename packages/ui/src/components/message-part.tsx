@@ -51,6 +51,11 @@ interface Diagnostic {
   severity?: number
 }
 
+function toolOutput(part: ToolPart): string | undefined {
+  if (part.state.status !== "completed") return undefined
+  return part.state.time?.compacted ? "[Old tool result content cleared]" : part.state.output
+}
+
 function getDiagnostics(
   diagnosticsByFile: Record<string, Diagnostic[]> | undefined,
   filePath: string | undefined,
@@ -995,8 +1000,7 @@ PART_MAPPING["tool"] = function ToolPartDisplay(props) {
               partID={part.id}
               callID={part.callID}
               metadata={partMetadata()}
-              // @ts-expect-error
-              output={part.state.output}
+              output={toolOutput(part)}
               status={part.state.status}
               hideDetails={props.hideDetails}
               defaultOpen={props.defaultOpen}
