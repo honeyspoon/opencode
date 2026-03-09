@@ -62,6 +62,14 @@ const STRUCTURED_OUTPUT_SYSTEM_PROMPT = `IMPORTANT: The user has requested struc
 export namespace SessionPrompt {
   const log = Log.create({ service: "session.prompt" })
 
+  function hintPromptLoopGC(compact: boolean): void {
+    try {
+      Bun.gc(compact)
+    } catch {
+      return
+    }
+  }
+
   const state = Instance.state(
     () => {
       const data: Record<
@@ -677,6 +685,8 @@ export namespace SessionPrompt {
         toolChoice: format.type === "json_schema" ? "required" : undefined,
       })
 
+      hintPromptLoopGC(true)
+
       // If structured output was captured, save it and exit immediately
       // This takes priority because the StructuredOutput tool was called successfully
       if (structuredOutput !== undefined) {
@@ -714,6 +724,7 @@ export namespace SessionPrompt {
       continue
     }
     SessionCompaction.prune({ sessionID })
+    hintPromptLoopGC(true)
     for await (const item of MessageV2.stream(sessionID)) {
       if (item.info.role === "user") continue
       const queued = state()[sessionID]?.callbacks ?? []
